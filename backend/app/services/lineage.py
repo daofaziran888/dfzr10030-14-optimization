@@ -25,7 +25,8 @@ class LineageService:
         nodes: list[dict] = []
         edges: list[dict] = []
         for i, row in enumerate(rows):
-            nodes.append({"id": int(row.get("id", i+1)), "name": str(row.get(list(row.keys())[1] if len(row)>1 else "name", "")), "status": str(row.get("status", STATUS_ORDER[0])),
+            name = str(row.get("关系编号") or row.get("name") or row.get("上游节点") or f"节点{i+1}")
+            nodes.append({"id": int(row.get("id", i+1)), "name": name, "status": str(row.get("status", STATUS_ORDER[0])),
                           **{k: row[k] for k in row if k not in ("id","status","pending","abnormal")}})
         for i in range(len(nodes)-1):
             edges.append({"from": nodes[i]["id"], "to": nodes[i+1]["id"], "label": "依赖"})

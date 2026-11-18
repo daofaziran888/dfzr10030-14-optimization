@@ -20,7 +20,8 @@ export default defineConfig({
     open: false,
     strictPort: false,
     proxy: {
-      '/api': {
+      // 用正则限定 /api/ 前缀：否则 /apiclient 这类页面路由会被误转发到后端。
+      '^/api/': {
         target: proxyTarget,
         changeOrigin: true,
       },

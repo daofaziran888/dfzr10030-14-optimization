@@ -10,6 +10,7 @@ from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import StreamingResponse
 
 from app.schemas import ActionPayload, ActionResult, EntryPayload, PageResult
+from app.services.dedup_impact import SCOPE_WINDOW, service as impact_service
 from app.services.lineage import LineageService
 
 router = APIRouter(prefix="/api/lineage", tags=["数据血缘追踪"])
@@ -43,6 +44,76 @@ def export_entries() -> StreamingResponse:
         writer.writerow(["edge", "", "", edge.get("from",""), edge.get("to",""), edge.get("label",""), ""])
     return StreamingResponse(iter([buf.getvalue()]), media_type="text/csv; charset=utf-8",
                              headers={"Content-Disposition": "attachment; filename=lineage.csv"})
+
+
+@router.get("/dedup-impact/ledger")
+def dedup_impact_ledger() -> dict[str, Any]:
+    """血缘服务读取重复影响摘要后落入的待确认台账。"""
+    rows = impact_service.ledger()
+    summaries = impact_service.list_summaries()
+    windows = []
+    for summary in (item for item in summaries if item.get("scope") == SCOPE_WINDOW):
+        window = summary["window"]
+        window_rows = [row for row in rows if row["window"] == window]
+        windows.append({
+            "window": window,
+            "summary_id": summary.get("id"),
+            "summary_no": summary.get("summary_no"),
+            "strategy_code": summary.get("strategy_code"),
+            "version": summary.get("version"),
+            "status": summary.get("status"),
+            "record_count": len(window_rows),
+            "pending_count": sum(1 for row in window_rows if row.get("status") == "待确认"),
+            "lineage_record_ids": sorted(
+                int(row["lineage_record_id"]) for row in window_rows if row.get("lineage_record_id")
+            ),
+        })
+    return {
+        "items": rows,
+        "total": len(rows),
+        "windows": windows,
+        "summary_count": len(summaries),
+        "options": [
+            {"window": item["window"], "strategy_code": item["strategy_code"], "version": item["version"]}
+            for item in impact_service.window_options()
+        ],
+    }
+
+
+@router.post("/dedup-impact/{window}/push")
+def push_dedup_impact(window: str) -> ActionResult:
+    """血缘服务读取重复影响摘要，把被替换记录落入待确认台账。"""
+    try:
+        summary, message = impact_service.push_to_lineage(window)
+    except KeyError:
+        return ActionResult(ok=False, message=f"窗口 {window} 没有可读取的重复影响摘要")
+    return ActionResult(ok=True, message=message, entry=summary)
+
+
+@router.post("/dedup-impact/{window}/confirm")
+def confirm_dedup_impact(window: str) -> ActionResult:
+    """确认待确认台账：确认后血缘服务才能接力生成业务记录。"""
+    try:
+        summary, message = impact_service.confirm_ledger(window)
+    except KeyError:
+        return ActionResult(ok=False, message=f"窗口 {window} 没有可读取的重复影响摘要")
+    return ActionResult(ok=True, message=message, entry=summary)
+
+
+@router.post("/dedup-impact/{window}/relay")
+def relay_dedup_impact(window: str) -> ActionResult:
+    """血缘服务接力摘要，生成可供去重服务回查的业务记录。"""
+    try:
+        summary, message = impact_service.relay(window)
+    except KeyError:
+        return ActionResult(ok=False, message=f"窗口 {window} 没有可读取的重复影响摘要")
+    return ActionResult(ok=True, message=message, entry=summary)
+
+
+@router.get("/dedup-impact/{window}/lookup")
+def lookup_dedup_impact(window: str) -> dict[str, Any]:
+    """去重服务按窗口回查摘要对应的血缘业务记录。"""
+    return impact_service.lookup(window)
 
 
 @router.get("/{entry_id}")

@@ -9,6 +9,7 @@ from fastapi.responses import StreamingResponse
 
 from app.schemas import ActionPayload, ActionResult, EntryPayload, PageResult
 from app.services.dedup import DedupService
+from app.services.dedup_impact import service as impact_service
 
 router = APIRouter(prefix="/api/dedup", tags=["采集去重"])
 

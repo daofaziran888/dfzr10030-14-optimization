@@ -70,3 +70,27 @@ body { margin: 0; background: #f6f8fb; color: #1f2937; }
 .analysis-chart { display: flex; align-items: flex-end; gap: 8px; height: 160px; padding: 12px 0; }
 .analysis-bar { flex: 1; border-radius: 4px 4px 0 0; background: var(--brand); min-width: 24px; position: relative; transition: height 0.4s; }
 .analysis-bar span { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--muted); white-space: nowrap; }
+/* 重复影响摘要 */
+.impact-panel { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; margin-bottom: 14px; }
+.impact-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.impact-head h3 { margin: 0; font-size: 15px; }
+.impact-controls { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; }
+.impact-field { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); }
+.impact-field select { padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; background: #fff; }
+.impact-preview { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; background: #f8fafc; border: 1px dashed var(--border); border-radius: 8px; padding: 10px 12px; margin: 10px 0; }
+.impact-metric { display: flex; flex-direction: column; gap: 2px; min-width: 120px; }
+.impact-metric strong { font-size: 15px; }
+.impact-note { width: 100%; margin: 4px 0 0; font-size: 12px; color: var(--muted); }
+.impact-stats .stat-card { padding: 8px 10px; }
+.impact-stats .stat-value { font-size: 17px; }
+.impact-table td { vertical-align: top; }
+.impact-group { border: 1px solid #eef1f5; border-radius: 6px; padding: 8px 10px; margin-bottom: 8px; background: #fbfcfe; }
+.impact-group-head { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+.impact-group-head strong { color: #1f2937; }
+.impact-group .data-table th, .impact-group .data-table td { font-size: 12px; padding: 5px 8px; }
+.ok-text { color: #15803d; }
+.warn-text { color: #b45309; }
+/* 血缘 · 重复影响台账 */
+.ledger-panel { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; margin-bottom: 14px; }
+.ledger-panel h3 { margin: 0 0 4px; font-size: 15px; }
+.ledger-head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: flex-start; }

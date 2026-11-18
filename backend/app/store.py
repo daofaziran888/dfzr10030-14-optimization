@@ -8,6 +8,10 @@ from typing import Any
 
 from app.seed import SEED_ROWS
 
+# 这些表是业务模块之间的交接中间态（重复影响摘要、血缘待确认台账），
+# 不作为独立业务模块出现在概览里。
+INTERNAL_MODULES = {"dedup_impact_queue", "dedup_impact_ledger"}
+
 
 class Store:
     def __init__(self) -> None:
@@ -16,7 +20,7 @@ class Store:
         }
 
     def module_names(self) -> list[str]:
-        return sorted(self._tables)
+        return sorted(name for name in self._tables if name not in INTERNAL_MODULES)
 
     def rows(self, module: str) -> list[dict[str, Any]]:
         return self._tables.setdefault(module, [])
